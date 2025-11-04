@@ -61,7 +61,7 @@ print("Gráfico 'grafico_AED_balanceo_clases.png' guardado.")
 
 #%%
 # (AED) Gráfico para Pregunta 1.a (Atributos Relevantes)
-print("Generando Gráfico 1.a (Atributos Relevantes)...")
+
 plt.figure(figsize=(6, 6))
 average_image = X_data.mean().to_numpy().reshape(28, 28)
 
@@ -73,7 +73,7 @@ plt.savefig('grafico_1a_atributos_relevantes.png')
 plt.show() 
 #%%
 # (AED) Gráfico para Pregunta 1.b (Similitud entre Clases)
-print("Generando Gráfico 1.b (Similitud entre Clases)...")
+
 df_avg_class = X_data.groupby(y_data).mean()
 
 plt.figure(figsize=(12, 6))
@@ -91,7 +91,7 @@ plt.savefig('grafico_1b_similitud_clases.png')
 plt.show() 
 #%%
 # (AED) Gráfico para Pregunta 1.c (Similitud Intra-Clase)
-print("Generando Gráfico 1.c (Similitud Intra-Clase)...")
+
 CLASE_A_INSPECCIONAR = 8 #
 
 X_clase_8 = X_data[y_data == CLASE_A_INSPECCIONAR]
