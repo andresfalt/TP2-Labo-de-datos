@@ -5,6 +5,8 @@ import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix, accuracy_score
 
 #%%
 
@@ -33,6 +35,7 @@ tipo_atributo = X_data.iloc[0].dtype
 clases_unicas = sorted(y_data.unique())
 cantidad_clases = len(clases_unicas)
 
+
 # 5. (AED) Gráfico de Balanceo de Clases
 
 plt.figure(figsize=(12, 7))
@@ -54,9 +57,7 @@ for p in ax_balance.patches:
                         textcoords = 'offset points')
                         
 plt.tight_layout()
-plt.savefig('grafico_AED_balanceo_clases.png')
 plt.show()
-print("Gráfico 'grafico_AED_balanceo_clases.png' guardado.")
 
 
 #%%
@@ -116,6 +117,9 @@ plt.show()
 #%%
 # TP2 - PARTE 2: CLASIFICACiÓN BINARIA
 
+df_binario = df_full[df_full['label'].isin([4, 5])]
+
+
 # Separar datos Clase 4 y 5 
 X_data4_5 = X_data[y_data.isin([4,5])]
 y_data4_5 = y_data[y_data.isin([4,5])]
@@ -124,6 +128,10 @@ y_data4_5 = y_data[y_data.isin([4,5])]
 cantidad_de_muestras = y_data4_5.size
 valores_clase_4 = y_data[y_data == 4].size
 valores_clase_5 = y_data[y_data == 5].size
+
+#print(cantidad_de_muestras)
+#print(valores_clase_4)
+#print(valores_clase_5)
 
 # Separar los datos en conjuntos train y test
 X_train, X_test, y_train, y_test = train_test_split(X_data4_5, y_data4_5, test_size=0.25, random_state=5)
@@ -137,7 +145,7 @@ resultados = []
 
 for k in valores_k:
     modelo = KNeighborsRegressor(n_neighbors=k)
-    promedios = X_data.mean(axis=0)
+    promedios = X_train.mean(axis=0)
     indices = np.argsort(promedios.values)[-l:][::-1]
     X_train0 = X_train.iloc[:, indices]
     X_test0 = X_test.iloc[:, indices]
@@ -157,5 +165,34 @@ for k in valores_k:
 # Mostrar resultados
 df_resultados = pd.DataFrame(resultados)
 print(df_resultados)
+
+
+# Classifier 
+
+resultados2= []
+
+for k in valores_k:
+    modelo = KNeighborsClassifier(n_neighbors=k)
+    promedios = X_train.mean(axis=0)
+    indices = np.argsort(promedios.values)[-l:][::-1]
+    X_train0 = X_train.iloc[:, indices]
+    X_test0 = X_test.iloc[:, indices]
+    modelo.fit(X_train0, y_train)
+
+    y_pred_train = modelo.predict(X_train0)
+    y_pred_test = modelo.predict(X_test0)
+
+    resultados2.append({
+        'k': k,
+        'Accuracy': accuracy_score(y_test, y_pred_test),
+        'Matriz Confusion': confusion_matrix(y_test, y_pred_test),
+    })
+
+df_resultados2 = pd.DataFrame(resultados2)
+print(df_resultados2)
+
+
+
+
 
 # %%
