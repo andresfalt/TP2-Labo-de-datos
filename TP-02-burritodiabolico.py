@@ -2,13 +2,16 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import train_test_split
 
 #%%
 
 sns.set_theme(style="whitegrid")
 
-df_full = pd.read_csv(r"C:\Users\andre\OneDrive\Documents\TP2-Labo-de-datos\kuzushiji_full.csv", header = 0) #cada uno ponga su direcccion hasta q podamos hacer lo del directorio relativo
-
+#df_full = pd.read_csv(r"C:\Users\andre\OneDrive\Documents\TP2-Labo-de-datos\kuzushiji_full.csv", header = 0) #cada uno ponga su direcccion hasta q podamos hacer lo del directorio relativo
+df_full = pd.read_csv(r"c:\Users\myurz\Downloads\Archivos TP-02\kuzushiji_full.csv")
 #%%
 # TP2 - PARTE 1: ANÁLISIS EXPLORATORIO DE DATOS 
 
@@ -22,6 +25,7 @@ X_data_numeric = X_data_raw.apply(pd.to_numeric, errors='coerce').fillna(0)
 # Normalizar los píxeles (escalar de 0-255 a 0-1)
 X_data = X_data_numeric / 255.0
 
+#%%
 # 4. (AED) Información Básica (Para el informe)
 cantidad_datos = X_data.shape[0]
 cantidad_atributos = X_data.shape[1]
@@ -108,3 +112,50 @@ plt.suptitle(f'1.c: Similitud Intra-Clase (Muestras Aleatorias Clase {CLASE_A_IN
 plt.subplots_adjust(hspace=0.4, wspace=0.2) # Añadir espacio
 plt.savefig('grafico_1c_similitud_intra_clase.png')
 plt.show() 
+
+#%%
+# TP2 - PARTE 2: CLASIFICACiÓN BINARIA
+
+# Separar datos Clase 4 y 5 
+X_data4_5 = X_data[y_data.isin([4,5])]
+y_data4_5 = y_data[y_data.isin([4,5])]
+
+# Información para el informe
+cantidad_de_muestras = y_data4_5.size
+valores_clase_4 = y_data[y_data == 4].size
+valores_clase_5 = y_data[y_data == 5].size
+
+# Separar los datos en conjuntos train y test
+X_train, X_test, y_train, y_test = train_test_split(X_data4_5, y_data4_5, test_size=0.25, random_state=5)
+
+# Seleccionar l pixeles mas significativos como atributos
+l = 50
+
+valores_k = [3,5,10]
+
+resultados = []
+
+for k in valores_k:
+    modelo = KNeighborsRegressor(n_neighbors=k)
+    promedios = X_data.mean(axis=0)
+    indices = np.argsort(promedios.values)[-l:][::-1]
+    X_train0 = X_train.iloc[:, indices]
+    X_test0 = X_test.iloc[:, indices]
+    modelo.fit(X_train0, y_train)
+
+    y_pred_train = modelo.predict(X_train0)
+    y_pred_test = modelo.predict(X_test0)
+
+    resultados.append({
+        'k': k,
+        'Train_RMSE': np.sqrt(mean_squared_error(y_train, y_pred_train)),
+        'Test_RMSE': np.sqrt(mean_squared_error(y_test, y_pred_test)),
+        'Train_MAE': mean_absolute_error(y_train, y_pred_train),
+        'Test_MAE': mean_absolute_error(y_test, y_pred_test),
+    })
+
+# Mostrar resultados
+df_resultados = pd.DataFrame(resultados)
+print(df_resultados)
+
+# %%
