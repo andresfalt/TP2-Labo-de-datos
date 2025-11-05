@@ -13,7 +13,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 sns.set_theme(style="whitegrid")
 
 #df_full = pd.read_csv(r"C:\Users\andre\OneDrive\Documents\TP2-Labo-de-datos\kuzushiji_full.csv", header = 0) #cada uno ponga su direcccion hasta q podamos hacer lo del directorio relativo
-df_full = pd.read_csv(r"c:\Users\myurz\Downloads\Archivos TP-02\kuzushiji_full.csv")
+df_full = pd.read_csv(r"C:\Users\andre\OneDrive\Documents\TP2-Labo-de-datos\kuzushiji_full.csv")
 #%%
 # TP2 - PARTE 1: ANÁLISIS EXPLORATORIO DE DATOS 
 
@@ -191,8 +191,145 @@ for k in valores_k:
 df_resultados2 = pd.DataFrame(resultados2)
 print(df_resultados2)
 
+#%%
+# TP2 - PARTE 3: ARBOLES DEDECISION
+# EXPERIMENTACIÓN (Árbol de Decisión con "gini")
 
+from sklearn.model_selection import KFold
+from sklearn.metrics import accuracy_score
+from sklearn.tree import DecisionTreeClassifier
 
+# 1. Definir la metodología de Validación Cruzada
+# -----------------------------------------------
+nsplits = 5
+kfold_cv = KFold(n_splits=nsplits, shuffle=True, random_state=42)
 
+# Separar datos en Desarrollo (80%) y Evaluación (20%)
+X_dev, X_eval, y_dev, y_eval = train_test_split(
+    X_data, 
+    y_data, 
+    test_size=0.2, 
+    random_state=42,
+    stratify=y_data)
 
-# %%
+# 2. Experimentación con Árbol de Decisión (DT) usando 'gini'
+
+# Probamos profundidades de 1 a 10
+valores_depth_gini = [1,3,5,7,10] 
+
+# Matriz de resultados: 1 fila por fold, 1 columna por 'max_depth'
+resultados_dt_gini = np.zeros((nsplits, len(valores_depth_gini)))
+
+# Loop externo: K-Fold splits (usando X_dev, y_dev)
+for i, (train_index, test_index) in enumerate(kfold_cv.split(X_dev)):
+    
+    # Separar los datos de este fold
+    kf_X_train, kf_X_test = X_dev.iloc[train_index], X_dev.iloc[test_index]
+    kf_y_train, kf_y_test = y_dev.iloc[train_index], y_dev.iloc[test_index]
+    
+    # Loop interno: Hiperparámetros
+    for j, depth in enumerate(valores_depth_gini):
+        
+        # Entrenar el modelo
+        dt_gini = DecisionTreeClassifier(
+            criterion='gini',  # <-- CONSIGNA 'b' (es el default)
+            max_depth=depth, 
+            random_state=42
+        )
+        dt_gini.fit(kf_X_train, kf_y_train)
+        
+        # Predecir y calcular score
+        pred = dt_gini.predict(kf_X_test)
+        score = accuracy_score(kf_y_test, pred)
+        
+        # Guardar el score
+        resultados_dt_gini[i, j] = score
+
+#%%
+# RESULTADOS Y GRÁFICO (DT con "gini")
+
+# 1. Calcular scores promedio
+scores_promedio_dt_gini = resultados_dt_gini.mean(axis=0)
+
+# 2. Encontrar el mejor hiperparámetro
+mejor_depth_index_gini = np.argmax(scores_promedio_dt_gini)
+mejor_depth_gini = valores_depth_gini[mejor_depth_index_gini]
+mejor_score_dt_gini = scores_promedio_dt_gini[mejor_depth_index_gini]
+
+print(f"Mejor Hiperparámetro (max_depth con 'gini'): {mejor_depth_gini}")
+print(f"Mejor Accuracy Promedio (CV con 'gini'): {mejor_score_dt_gini * 100:.2f}%")
+
+# 3. Preparar DataFrame para el Boxplot
+df_resultados_dt_gini = pd.DataFrame(resultados_dt_gini, columns=valores_depth_gini)
+df_melted_dt_gini = df_resultados_dt_gini.melt(
+    var_name='max_depth (Profundidad)', 
+    value_name='Accuracy'
+)
+
+# 4. Generar Boxplot de DT (gini)
+plt.figure(figsize=(12, 7))
+sns.boxplot(data=df_melted_dt_gini, x='max_depth (Profundidad)', y='Accuracy', palette='plasma')
+plt.title("Rendimiento de DT ('gini') vs. Profundidad Máxima (5-fold CV)", fontsize=16, weight='bold')
+plt.xlabel('Profundidad Máxima (max_depth)', fontsize=12)
+plt.ylabel('Accuracy del Fold', fontsize=12)
+plt.tight_layout()
+plt.show()
+
+#%%
+# EXPERIMENTACIÓN (Árbol de Decisión con 'entropy')
+
+valores_depth_entropy = [1,3,5,7,10]
+
+# Matriz de resultados: 1 fila por fold, 1 columna por 'max_depth'
+resultados_dt_entropy = np.zeros((nsplits, len(valores_depth_entropy)))
+# Loop externo: K-Fold splits (usando X_dev, y_dev)
+for i, (train_index, test_index) in enumerate(kfold_cv.split(X_dev)):
+    print(f"  DT (entropy): Fold {i+1}/{nsplits}...")
+    # Separar los datos de este fold
+    kf_X_train, kf_X_test = X_dev.iloc[train_index], X_dev.iloc[test_index]
+    kf_y_train, kf_y_test = y_dev.iloc[train_index], y_dev.iloc[test_index]
+    # Loop interno: Hiperparámetros
+    for j, depth in enumerate(valores_depth_entropy):
+        # Entrenar el modelo
+        dt_entropy = DecisionTreeClassifier(
+            criterion='entropy',  
+            max_depth=depth, 
+            random_state=42
+        )
+        dt_entropy.fit(kf_X_train, kf_y_train)
+        # Predecir y calcular score
+        pred = dt_entropy.predict(kf_X_test)
+        score = accuracy_score(kf_y_test, pred)
+        # Guardar el score
+        resultados_dt_entropy[i, j] = score
+
+#%%
+# RESULTADOS Y GRÁFICO (DT con entropy)
+
+# 1. Calcular scores promedio
+scores_promedio_dt_entropy = resultados_dt_entropy.mean(axis=0)
+
+# 2. Encontrar el mejor hiperparámetro
+mejor_depth_index_entropy = np.argmax(scores_promedio_dt_entropy)
+mejor_depth_entropy = valores_depth_entropy[mejor_depth_index_entropy]
+mejor_score_dt_entropy = scores_promedio_dt_entropy[mejor_depth_index_entropy]
+
+print(f"Mejor Hiperparámetro (max_depth con 'entropy'): {mejor_depth_entropy}")
+print(f"Mejor Accuracy Promedio (CV con 'entropy'): {mejor_score_dt_entropy * 100:.2f}%")
+
+# 3. Preparar DataFrame para el Boxplot
+df_resultados_dt_entropy = pd.DataFrame(resultados_dt_entropy, columns=valores_depth_entropy)
+df_melted_dt_entropy = df_resultados_dt_entropy.melt(
+    var_name='max_depth (Profundidad)', 
+    value_name='Accuracy'
+)
+
+# 4. Generar Boxplot de DT (entropy)
+plt.figure(figsize=(12, 7))
+sns.boxplot(data=df_melted_dt_entropy, x='max_depth (Profundidad)', y='Accuracy', palette='plasma')
+plt.title("Rendimiento de DT ('entropy') vs. Profundidad Máxima (5-fold CV)", fontsize=16, weight='bold')
+plt.xlabel('Profundidad Máxima (max_depth)', fontsize=12)
+plt.ylabel('Accuracy del Fold', fontsize=12)
+plt.tight_layout()
+plt.show()
+
