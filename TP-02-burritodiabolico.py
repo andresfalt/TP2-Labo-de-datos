@@ -179,7 +179,7 @@ for k in valores_k:
     X_test0 = X_test.iloc[:, indices]
     modelo.fit(X_train0, y_train)
 
-    y_pred_train = modelo.predict(X_train0)
+    #y_pred_train = modelo.predict(X_train0)
     y_pred_test = modelo.predict(X_test0)
 
     resultados2.append({
@@ -201,7 +201,7 @@ for k in valores_k:
     modelo = KNeighborsClassifier(n_neighbors=k)
     modelo.fit(X_train_fs, y_train)
     
-    y_pred_train = modelo.predict(X_train_fs)
+    #y_pred_train = modelo.predict(X_train_fs)
     y_pred_test = modelo.predict(X_test_fs)
     
     resultados3.append({
