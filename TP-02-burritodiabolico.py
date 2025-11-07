@@ -166,8 +166,32 @@ for k in valores_k:
 df_resultados = pd.DataFrame(resultados)
 print(df_resultados)'''
 
+# Modelo con cantidad reducida de atributos
 
-# Classifier 
+resultados3atributos= []
+
+for k in valores_k:
+    modelo = KNeighborsClassifier(n_neighbors=k)
+    promedios = X_train.mean(axis=0)
+    indices = np.argsort(promedios.values)[-3:][::-1]
+    X_train0 = X_train.iloc[:, indices]
+    X_test0 = X_test.iloc[:, indices]
+    modelo.fit(X_train0, y_train)
+
+    #y_pred_train = modelo.predict(X_train0)
+    y_pred_test = modelo.predict(X_test0)
+
+    resultados3atributos.append({
+        'k': k,
+        'Accuracy': accuracy_score(y_test, y_pred_test),
+        'Matriz Confusion': confusion_matrix(y_test, y_pred_test),
+    })
+
+df_resultados3atributos = pd.DataFrame(resultados3atributos)
+print(df_resultados3atributos)
+
+# Modelos con mayor cantidad de atributos
+
 
 resultados2= []
 
