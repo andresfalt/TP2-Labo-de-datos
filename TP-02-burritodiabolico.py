@@ -136,10 +136,6 @@ valores_clase_5 = y_data[y_data == 5].size
 # Separar los datos en conjuntos train y test
 X_train, X_test, y_train, y_test = train_test_split(X_data4_5, y_data4_5, test_size=0.25, random_state=5)
 
-# Seleccionar l pixeles mas significativos como atributos
-l = 50
-
-valores_k = [3,5,10]
 '''
 resultados = []
 
@@ -168,6 +164,8 @@ print(df_resultados)'''
 
 # Modelo con cantidad reducida de atributos
 
+valores_k = [3,5,10]
+
 resultados3atributos= []
 
 for k in valores_k:
@@ -191,6 +189,10 @@ df_resultados3atributos = pd.DataFrame(resultados3atributos)
 print(df_resultados3atributos)
 
 # Modelos con mayor cantidad de atributos
+
+# Seleccionar l pixeles mas significativos como atributos
+l = 50
+
 
 
 resultados2= []
