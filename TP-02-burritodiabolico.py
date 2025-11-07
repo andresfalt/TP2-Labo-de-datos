@@ -328,23 +328,19 @@ valores_depth_entropy = [1,3,5,7,10]
 resultados_dt_entropy = np.zeros((nsplits, len(valores_depth_entropy)))
 # Loop K-Fold splits (usando X_dev, y_dev)
 for i, (train_index, test_index) in enumerate(kfold_cv.split(X_dev)):
-    print(f"  DT (entropy): Fold {i+1}/{nsplits}...")
     # Separar los datos de este fold
     kf_X_train, kf_X_test = X_dev.iloc[train_index], X_dev.iloc[test_index]
     kf_y_train, kf_y_test = y_dev.iloc[train_index], y_dev.iloc[test_index]
     # Loop hiperparámetros
     for j, depth in enumerate(valores_depth_entropy):
-    
         dt_entropy = DecisionTreeClassifier(
             criterion='entropy',  
             max_depth=depth, 
             random_state=42
         )
         dt_entropy.fit(kf_X_train, kf_y_train)
-        
         pred = dt_entropy.predict(kf_X_test)
         score = accuracy_score(kf_y_test, pred)
-        
         resultados_dt_entropy[i, j] = score
 
 #%%
@@ -375,5 +371,58 @@ plt.title("Rendimiento de 'entropy' vs. Profundidad Máxima (5-fold CV)", fontsi
 plt.xlabel('Profundidad Máxima (max_depth)', fontsize=12)
 plt.ylabel('Accuracy del Fold', fontsize=12)
 plt.tight_layout()
+plt.show()
+
+#%%
+# TP2 - PARTE 3.d: SELECCIÓN Y EVALUACIÓN FINAL
+# Comparamos los mejores scores promedio de los dos arboles para elegir un modelo "campeón"
+# Luego, re-entrenamos ese campeón con TODO el set de Desarrollo (X_dev)
+# y lo evaluamos UNA SOLA VEZ contra el set de Evaluación (X_eval).
+
+
+# (Asegúrate de tener esta importación al inicio de tu script)
+from sklearn.metrics import confusion_matrix, accuracy_score
+
+# 1. Comparar los scores promedio de la Validación Cruzada
+# --------------------------------------------------------
+print(f"Mejor score Árbol (gini):    {mejor_score_dt_gini * 100:.2f}% (con max_depth={mejor_depth_gini})")
+print(f"Mejor score Árbol (entropy): {mejor_score_dt_entropy * 100:.2f}% (con max_depth={mejor_depth_entropy})")
+
+if mejor_score_dt_gini > mejor_score_dt_entropy:
+    print("\nModelo Campeón: Árbol de Decisión con 'gini'.")
+    mejor_criterio = 'gini'
+    mejor_profundidad = mejor_depth_gini
+else:
+    print("\nModelo Campeón: Árbol de Decisión con 'entropy'.")
+    mejor_criterio = 'entropy'
+    mejor_profundidad = mejor_depth_entropy
+
+# Inicializar el modelo campeón con los mejores hiperparámetros encontrados
+modelo_campeon = DecisionTreeClassifier(
+    criterion=mejor_criterio,
+    max_depth=mejor_profundidad,
+    random_state=42
+)
+
+# Re-entrenar usando TODOS los datos de desarrollo (X_dev, y_dev)
+modelo_campeon.fit(X_dev, y_dev)
+
+# 3. Evaluación Final (Held-Out Test Set)
+# Evaluar UNA SOLA VEZ contra el set de evaluación
+y_pred_eval = modelo_campeon.predict(X_eval)
+
+# Calcular el Accuracy final
+accuracy_final = accuracy_score(y_eval, y_pred_eval)
+
+print(f"El Accuracy final (sobre el Test Set) del modelo campeón es: {accuracy_final * 100:.2f}%")
+
+# 4. Matriz de Confusión
+cm = confusion_matrix(y_eval, y_pred_eval)
+plt.figure(figsize=(10, 8))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=range(10), yticklabels=range(10))
+plt.title('Matriz de Confusión sobre el Conjunto de Evaluación', fontsize=16, weight='bold')
+plt.xlabel('Clase Predicha', fontsize=12)
+plt.ylabel('Clase Verdadera', fontsize=12)
 plt.show()
 
