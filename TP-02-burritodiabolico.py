@@ -1,3 +1,9 @@
+# Yurzola, Marcos        1235/24      myurzol@gmail.com     
+# Faltlhauser, Andres    1255/24      faltlhauserandres@gmail.com
+# Kirschbaum, Owen       1310/24      owenkir17@gmail.com
+
+
+#%%
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -5,7 +11,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score
-from sklearn.feature_selection import SelectKBest, f_classif #ver si lo podemos usar
+from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.model_selection import KFold
 from sklearn.tree import DecisionTreeClassifier
 
