@@ -2,12 +2,12 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-'''from sklearn.neighbors import KNeighborsRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error'''
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.feature_selection import SelectKBest, f_classif #ver si lo podemos usar
+from sklearn.model_selection import KFold
+from sklearn.tree import DecisionTreeClassifier
 
 #%%
 
@@ -136,32 +136,6 @@ valores_clase_5 = y_data[y_data == 5].size
 # Separar los datos en conjuntos train y test
 X_train, X_test, y_train, y_test = train_test_split(X_data4_5, y_data4_5, test_size=0.25, random_state=5)
 
-'''
-resultados = []
-
-for k in valores_k:
-    modelo = KNeighborsRegressor(n_neighbors=k)
-    promedios = X_train.mean(axis=0)
-    indices = np.argsort(promedios.values)[-l:][::-1]
-    X_train0 = X_train.iloc[:, indices]
-    X_test0 = X_test.iloc[:, indices]
-    modelo.fit(X_train0, y_train)
-
-    y_pred_train = modelo.predict(X_train0)
-    y_pred_test = modelo.predict(X_test0)
-
-    resultados.append({
-        'k': k,
-        'Train_RMSE': np.sqrt(mean_squared_error(y_train, y_pred_train)),
-        'Test_RMSE': np.sqrt(mean_squared_error(y_test, y_pred_test)),
-        'Train_MAE': mean_absolute_error(y_train, y_pred_train),
-        'Test_MAE': mean_absolute_error(y_test, y_pred_test),
-    })
-
-# Mostrar resultados
-df_resultados = pd.DataFrame(resultados)
-print(df_resultados)'''
-
 # Modelo con cantidad reducida de atributos
 
 valores_k = [3,5,10]
@@ -243,8 +217,7 @@ print(df_resultados3)
 # TP2 - PARTE 3: ARBOLES DEDECISION
 # Árbol de Decisión con "gini"
 
-from sklearn.model_selection import KFold
-from sklearn.tree import DecisionTreeClassifier
+
 
 # 1. Definir la metodología de Validación Cruzada
 # -----------------------------------------------
@@ -380,11 +353,8 @@ plt.show()
 # y lo evaluamos UNA SOLA VEZ contra el set de Evaluación (X_eval).
 
 
-# (Asegúrate de tener esta importación al inicio de tu script)
-from sklearn.metrics import confusion_matrix, accuracy_score
+# Comparar los scores promedio de la Validación Cruzada
 
-# 1. Comparar los scores promedio de la Validación Cruzada
-# --------------------------------------------------------
 print(f"Mejor score Árbol (gini):    {mejor_score_dt_gini * 100:.2f}% (con max_depth={mejor_depth_gini})")
 print(f"Mejor score Árbol (entropy): {mejor_score_dt_entropy * 100:.2f}% (con max_depth={mejor_depth_entropy})")
 
@@ -407,16 +377,16 @@ modelo_campeon = DecisionTreeClassifier(
 # Re-entrenar usando TODOS los datos de desarrollo (X_dev, y_dev)
 modelo_campeon.fit(X_dev, y_dev)
 
-# 3. Evaluación Final (Held-Out Test Set)
+# Evaluación Final (Held-Out Test Set)
 # Evaluar UNA SOLA VEZ contra el set de evaluación
 y_pred_eval = modelo_campeon.predict(X_eval)
 
-# Calcular el Accuracy final
+# Accuracy final
 accuracy_final = accuracy_score(y_eval, y_pred_eval)
 
 print(f"El Accuracy final (sobre el Test Set) del modelo campeón es: {accuracy_final * 100:.2f}%")
 
-# 4. Matriz de Confusión
+# Matriz de Confusión
 cm = confusion_matrix(y_eval, y_pred_eval)
 plt.figure(figsize=(10, 8))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
