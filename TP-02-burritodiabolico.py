@@ -170,7 +170,7 @@ print(df_resultados3atributos)
 
 # Modelos con mayor cantidad de atributos
 
-# Seleccionar l pixeles mas significativos como atributos
+# Seleccion de l pixeles mas significativos como atributos
 l = 50
 
 
@@ -226,7 +226,7 @@ print(df_resultados3)
 
 
 # 1. Definir la metodología de Validación Cruzada
-# -----------------------------------------------
+
 nsplits = 5
 kfold_cv = KFold(n_splits=nsplits, shuffle=True, random_state=42)
 
