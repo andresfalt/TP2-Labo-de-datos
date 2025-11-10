@@ -19,8 +19,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 sns.set_theme(style="whitegrid")
 
-#df_full = pd.read_csv(r"C:\Users\andre\OneDrive\Documents\TP2-Labo-de-datos\kuzushiji_full.csv", header = 0) #cada uno ponga su direcccion hasta q podamos hacer lo del directorio relativo
-df_full = pd.read_csv(r"C:\Users\andre\OneDrive\Documents\TP2-Labo-de-datos\kuzushiji_full.csv")
+df_full = pd.read_csv(r"TP-02-burritodiabolico\datos\kuzushiji_full.csv")
 #%%
 # TP2 - PARTE 1: ANÁLISIS EXPLORATORIO DE DATOS 
 
